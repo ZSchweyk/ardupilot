@@ -24,3 +24,7 @@ Follow the steps I took below to properly flash the bootloader and built FC code
 
 Here's the gemini thread I've been querying for reference: https://share.google/aimode/h0LhjRqGtX33M5OnZ
 
+
+
+
+Set DEFAULT_FRAME_CLASS to 1 in Parameters.cpp
