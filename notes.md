@@ -1,5 +1,13 @@
 # Instructions
 
+
+0. Clone the repo in WSL Ubuntu. Then run the following:
+
+    ```
+    sudo apt update
+    sudo apt install gcc-arm-none-eabi
+    ```
+
 Follow the steps I took below to properly flash the bootloader and built FC code onto the BlitzMiniF745.  
 1. Build the appropriate bootloader (and code). This needs to be done only the very first time since the FC comes with a BetaFlight bootloader.
     ```
