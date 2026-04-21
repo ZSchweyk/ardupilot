@@ -26,6 +26,9 @@
 #include <AP_MSP/msp.h>
 #include "AP_RangeFinder_Params.h"
 
+// my includes
+#include "AP_MCPDisplay.h"
+
 // Maximum number of range finder instances available on this platform
 #ifndef RANGEFINDER_MAX_INSTANCES 
   #if AP_RANGEFINDER_ENABLED
@@ -51,7 +54,10 @@ class RangeFinder
     //UAVCAN drivers are initialised in the Backend, hence list of drivers is needed there.
     friend class AP_RangeFinder_DroneCAN;
 public:
+    AP_MCPDisplay mcp_disp;
     RangeFinder();
+
+    void probe_i2c_buses();
 
     /* Do not allow copies */
     CLASS_NO_COPY(RangeFinder);
