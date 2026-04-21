@@ -211,7 +211,8 @@ void RangeFinder::convert_params(void)
  */
 __INITFUNC__ void RangeFinder::init(enum Rotation orientation_default)
 {
-    mcp_disp.init(0);
+    //GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "WE ARE IN INITTTTTTTTTTTTTTTTTTTTTTTT");
+
     
 
     convert_params();
@@ -277,18 +278,16 @@ void RangeFinder::probe_i2c_buses() {
  */
 void RangeFinder::update(void)
 {
-    // gcs().send_text(MAV_SEVERITY_EMERGENCY, "zeyn update");
-
-    // static uint32_t last_probe_ms = 0;
-    // uint32_t now = AP_HAL::millis();
-
-    // if (now - last_probe_ms > 5000) { // Probe every 5 seconds
-    //     last_probe_ms = now;
-    //     probe_i2c_buses();
-    // }
+    if (!once) {
+        mcp_disp.init(0);
+        GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "init once");
+        once = true;
+    }
 
     mcp_disp.update();
-    GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "LED output: %u", (unsigned int) mcp_disp.raw_led_states());
+
+    
+    // GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "LED output: %u", (unsigned int) mcp_disp.raw_led_states());
 
 
 

@@ -12,7 +12,7 @@ Follow the steps I took below to properly flash the bootloader and built FC code
 1. Build the appropriate bootloader (and code). This needs to be done only the very first time since the FC comes with a BetaFlight bootloader.
     ```
     ./waf configure --board BlitzMiniF745
-    ./waf copter
+    ./waf copter --upload
     ```
     This should generate a .hex file in `build/BlitzMiniF745/bin` named `arducopter_with_bl.hex`.  
 2. Download and install BetaFlight version 10.8 (10.9 and 10.10 have [bugs in them](https://github.com/betaflight/betaflight-configurator/issues/3833)). Run BetaFlight. While the FC is powered off, hold down the Boot button, and power it on via USB. You should see "DFU" mode at the top right hand corner, instead of a COM port. This is good because it means that the FC is in the appropriate mode to flash a new bootloader onto it.  

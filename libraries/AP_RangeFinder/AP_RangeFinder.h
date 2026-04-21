@@ -54,6 +54,7 @@ class RangeFinder
     //UAVCAN drivers are initialised in the Backend, hence list of drivers is needed there.
     friend class AP_RangeFinder_DroneCAN;
 public:
+    bool once = false;
     AP_MCPDisplay mcp_disp;
     RangeFinder();
 

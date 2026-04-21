@@ -75,7 +75,7 @@ void AP_MCPDisplay::init(uint8_t bus)
     }
 
     // second chip optional; if missing, only first 16 bits are available
-    if (!_dev2) {
+    if (_dev2) {
         _dev2->set_retries(10);
         if (!configure_device(_dev2.get())) {
             GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "MCPD: dev2 cfg fail");
@@ -95,6 +95,8 @@ void AP_MCPDisplay::init(uint8_t bus)
 
 void AP_MCPDisplay::poll()
 {
+    GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "starting poll");
+    
     if (!_healthy) {
         GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "not healthy");
         return;
@@ -233,12 +235,14 @@ void AP_MCPDisplay::handle_decoded_value()
 void AP_MCPDisplay::update()
 {
     if (!_new_data) {
+        GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "_new_data is false");
         return;
     }
     _new_data = false;
 
     const uint32_t states = _led_states;
     if (states == _last_led_states) {
+        GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "states are same");
         return;
     }
     _last_led_states = states;
