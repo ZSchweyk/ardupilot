@@ -137,8 +137,12 @@ void Copter::init_ardupilot()
     barometer.set_log_baro_bit(MASK_LOG_IMU);
     barometer.calibrate();
 
+    //GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "init_ardupilot");
+
 #if AP_RANGEFINDER_ENABLED
     // initialise rangefinder
+    //GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "in ap_rngfnder_enabled");
+
     init_rangefinder();
 #endif
 

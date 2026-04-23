@@ -973,6 +973,9 @@ private:
     void radio_passthrough_to_motors();
     int16_t get_throttle_mid(void);
 
+    // stick MCP obj initialization here
+    // make update_sensor_guided_target that actually takes in beacon and tof, sets mode to Guided and calls mode.set_pos_NED_m bec this is body frame
+
     // sensors.cpp
     void read_barometer(void);
     void init_rangefinder(void);

@@ -72,6 +72,10 @@
 #include <AP_HAL/I2CDevice.h>
 #include <AP_InternalError/AP_InternalError.h>
 
+// includes i'm adding
+#include <GCS_MAVLink/GCS.h>
+#include "AP_MCPDisplay.h"
+
 extern const AP_HAL::HAL &hal;
 
 // table of user settable parameters
@@ -207,6 +211,10 @@ void RangeFinder::convert_params(void)
  */
 __INITFUNC__ void RangeFinder::init(enum Rotation orientation_default)
 {
+    //GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "WE ARE IN INITTTTTTTTTTTTTTTTTTTTTTTT");
+    mcp_disp.init(0);
+    
+
     convert_params();
 
     if (num_instances != 0) {
@@ -240,12 +248,44 @@ __INITFUNC__ void RangeFinder::init(enum Rotation orientation_default)
     }
 }
 
+void RangeFinder::probe_i2c_buses() {
+    for (uint8_t bus = 0; bus < 3; bus++) {
+        // Use the macro - it's safer and handles the "is GCS connected" check internally
+        GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "I2C Scan Bus %u", (unsigned)bus);
+
+        for (uint8_t addr = 0x01; addr <= 0x7F; addr++) {
+            auto dev = hal.i2c_mgr->get_device(bus, addr);
+            if (!dev) continue;
+
+            // Use a 1ms timeout. If the bus is busy, we just skip this address 
+            // and try again in 5 seconds to avoid freezing the drone.
+            if (dev->get_semaphore()->take(1)) { 
+                uint8_t dummy_val;
+                if (dev->read_registers(0x00, &dummy_val, 1)) {
+                    GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "MATCH: B:%u A:0x%02X", (unsigned)bus, (unsigned)addr);
+                }
+                dev->get_semaphore()->give();
+            }
+        }
+    }
+}
+
+
+
 /*
   update RangeFinder state for all instances. This should be called at
   around 10Hz by main loop
  */
 void RangeFinder::update(void)
-{
+{    
+
+    mcp_disp.update();
+
+    GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "poll_called: %u", mcp_disp.poll_called);
+
+
+
+
     for (uint8_t i=0; i<num_instances; i++) {
         if (drivers[i] != nullptr) {
             if ((Type)params[i].type.get() == Type::NONE) {

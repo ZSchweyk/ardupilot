@@ -101,6 +101,7 @@ public:
         AUTOROTATE =   26,  // Autonomous autorotation
         AUTO_RTL =     27,  // Auto RTL, this is not a true mode, AUTO will report as this mode if entered to perform a DO_LAND_START Landing sequence
         TURTLE =       28,  // Flip over after crash
+        SNOWBAT =      29
 
         // Mode number 30 reserved for "offboard" for external/lua control.
 
@@ -891,6 +892,37 @@ private:
     uint32_t _timeout_ms;
 
 };
+
+
+class ModeSnowBat : public Mode {
+
+public:
+    // inherit constructor
+    using Mode::Mode;
+    Number mode_number() const override { return Number::SNOWBAT; }
+
+    bool init(bool ignore_checks) override;
+    void run() override;
+
+    bool requires_GPS() const override { return true; }
+    bool has_manual_throttle() const override { return false; }
+    bool allows_arming(AP_Arming::Method method) const override { return false; };
+    bool is_autopilot() const override { return true; }
+
+protected:
+
+    const char *name() const override { return "Circle"; }
+    const char *name4() const override { return "CIRC"; }
+
+    float wp_distance_m() const override;
+    float wp_bearing_deg() const override;
+
+private:
+
+    // Circle
+    bool speed_changing = false;     // true when the roll stick is being held to facilitate stopping at 0 rate
+};
+
 
 
 class ModeCircle : public Mode {
