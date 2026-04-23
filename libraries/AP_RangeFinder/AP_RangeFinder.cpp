@@ -212,7 +212,7 @@ void RangeFinder::convert_params(void)
 __INITFUNC__ void RangeFinder::init(enum Rotation orientation_default)
 {
     //GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "WE ARE IN INITTTTTTTTTTTTTTTTTTTTTTTT");
-
+    mcp_disp.init(0);
     
 
     convert_params();
@@ -277,17 +277,11 @@ void RangeFinder::probe_i2c_buses() {
   around 10Hz by main loop
  */
 void RangeFinder::update(void)
-{
-    if (!once) {
-        mcp_disp.init(0);
-        GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "init once");
-        once = true;
-    }
+{    
 
     mcp_disp.update();
 
-    
-    // GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "LED output: %u", (unsigned int) mcp_disp.raw_led_states());
+    GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "poll_called: %u", mcp_disp.poll_called);
 
 
 

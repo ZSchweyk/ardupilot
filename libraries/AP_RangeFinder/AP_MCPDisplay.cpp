@@ -86,15 +86,16 @@ void AP_MCPDisplay::init(uint8_t bus)
     _healthy = true;
 
     // poll once per second
-    _dev1->register_periodic_callback(
-        1000000,
-        FUNCTOR_BIND_MEMBER(&AP_MCPDisplay::poll, void)
-    );
+    // _dev1->register_periodic_callback(
+    //     1000000,
+    //     FUNCTOR_BIND_MEMBER(&AP_MCPDisplay::poll, void)
+    // );
 
 }
 
 void AP_MCPDisplay::poll()
 {
+    poll_called = true;
     GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "starting poll");
     
     if (!_healthy) {
@@ -234,8 +235,12 @@ void AP_MCPDisplay::handle_decoded_value()
 
 void AP_MCPDisplay::update()
 {
+    const uint32_t now = AP_HAL::millis();
+    if (now - prev_update < 1000) return;
+    poll();
     if (!_new_data) {
-        GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "_new_data is false");
+        // we always get stuck here...
+        // GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "_new_data is false");
         return;
     }
     _new_data = false;

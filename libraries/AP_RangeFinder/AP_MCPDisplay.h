@@ -6,6 +6,7 @@
 class AP_MCPDisplay {
 public:
     AP_MCPDisplay() = default;
+    bool poll_called = false;
 
     void init(uint8_t bus = 1);
     void update();
@@ -19,6 +20,8 @@ public:
     uint32_t final_results() const { return _final_results; }
 
 private:
+    uint32_t prev_update = 0;
+
     static constexpr uint8_t ADDR1 = 0x20;
     static constexpr uint8_t ADDR2 = 0x24; // change to match your actual second MCP if used
 
