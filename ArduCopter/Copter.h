@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <cmath>
+#include <cstdint>
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -76,6 +77,9 @@
 // Configuration
 #include "defines.h"
 #include "config.h"
+
+// my includes
+#include "AP_MCPDisplay.h"
 
 #if FRAME_CONFIG == HELI_FRAME
  #define MOTOR_CLASS AP_MotorsHeli
@@ -973,8 +977,12 @@ private:
     void radio_passthrough_to_motors();
     int16_t get_throttle_mid(void);
 
-    // stick MCP obj initialization here
+    
+    AP_MCPDisplay mcp_disp;  // stick MCP obj initialization here
+    uint32_t snowbat_search_algo_count = 0;
     // make update_sensor_guided_target that actually takes in beacon and tof, sets mode to Guided and calls mode.set_pos_NED_m bec this is body frame
+    // wp_update.cpp
+    void update_sensor_guided_target(void);
 
     // sensors.cpp
     void read_barometer(void);

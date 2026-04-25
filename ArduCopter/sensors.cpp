@@ -3,6 +3,7 @@
 // return barometric altitude in centimeters
 void Copter::read_barometer(void)
 {
+    // GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "inside read_barometer");
     barometer.update();
 
     baro_alt_m = barometer.get_altitude();
@@ -24,6 +25,9 @@ void Copter::init_rangefinder(void)
 // return rangefinder altitude in centimeters
 void Copter::read_rangefinder(void)
 {
+    // GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "Run read_rangefinder");
+
+    update_sensor_guided_target(); // i'm sticking this here for now since we know this is called frequently
     rangefinder.update();
 
     rangefinder_state.update();
