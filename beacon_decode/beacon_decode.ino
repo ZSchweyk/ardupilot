@@ -44,31 +44,17 @@ float direction_angle(uint8_t direction_bits) {
 
 
 // Must read out GPIO pins in order of a = LSB, g = MSB
-uint8_t getDigitFromMask(uint8_t mask, uint8_t left) {
+uint8_t getDigitFromMask(uint8_t mask) {
     // Standard Common Cathode Lookup Table
-    static const uint8_t segmentTableRight[] = {
+    static const uint8_t segmentTable[] = {
         0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x67
     };
 
-    // static const uint8_t segmentTableLeft[] = {
-    //     0x3F, 0x16, 0x5B, 0x5F, 0x76, 0x6D, 0x7D, 0x07, 0x7F, 0x67
-    // };
-
-    if (left) {
-      for (uint8_t i = 0; i < 10; ++i) {
-        if (segmentTableRight[i] == mask) {
-            return i;
-        }
-      }
-    } else {
-      for (uint8_t i = 0; i < 10; ++i) {
-        if (segmentTableRight[i] == mask) {
-            return i;
-        }
+    for (uint8_t i = 0; i < 10; ++i) {
+      if (segmentTable[i] == mask) {
+          return i;
       }
     }
-
-    
 
     // Return a sentinel value (255) if no match is found
     return 0xFF; 
@@ -124,8 +110,8 @@ void loop() {
     uint8_t reformed_right_digit = reformLED(ledStates, rightDigitSegs, 7);
     uint8_t mid = reformLED(ledStates, directionSegs, 5);
     float direction = direction_angle(mid);
-    uint8_t left_digit = getDigitFromMask(reformed_left_digit, 1);
-    uint8_t right_digit = getDigitFromMask(reformed_right_digit, 0);
+    uint8_t left_digit = getDigitFromMask(reformed_left_digit);
+    uint8_t right_digit = getDigitFromMask(reformed_right_digit);
     Serial.print(left_digit);
     Serial.print(" | ");
     Serial.print(right_digit);

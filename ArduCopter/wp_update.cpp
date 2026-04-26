@@ -1,18 +1,33 @@
 #include "Copter.h"
+#include <AP_Math/AP_Math.h>
+
 #include "AP_MCPDisplay.h"
 
-float beacon_bitmap_dir_to_rad(const uint8_t dir_bitmap) {
-    float pi = 3.1415926536;
 
-    if (dir_bitmap & 0b10000) return -pi / 2;
-    if ((dir_bitmap & 0b11000) == 0b11000) return -67.5 * (pi / 180);
-    if (dir_bitmap & 0b01000) return -pi / 4;
-    if ((dir_bitmap & 0b01100) == 0b01100) return -22.5 * (pi / 180);
-    if (dir_bitmap & 0b00100) return 0;  // up, 0 deg
-    if ((dir_bitmap & 0b00110) == 0b00110) return 22.5 * (pi / 180);
-    if (dir_bitmap & 0b00010) return pi / 4;
-    if ((dir_bitmap & 0b00011) == 0b00011) return 67.5 * (pi / 180);
-    return pi / 2;
+
+float min(double x, double y) {
+    if (x < y) return x;
+    return y;
+}
+
+
+Vector3f make_ned_target_body_relative(const Vector3f& current_ned,
+                                       float drone_yaw_rad,
+                                       float direction_rad,
+                                       float remaining_distance_m,
+                                       float max_step_m)
+{
+    const float step_m = min(remaining_distance_m, max_step_m);
+
+    // Convert body-relative direction to world/NED direction
+    const float world_direction_rad = drone_yaw_rad + direction_rad;
+
+    Vector3f target;
+    target.x = current_ned.x + step_m * cosf(world_direction_rad); // North
+    target.y = current_ned.y + step_m * sinf(world_direction_rad); // East
+    target.z = current_ned.z;                                      // Down unchanged
+
+    return target;
 }
 
 void Copter::update_sensor_guided_target(void) {
@@ -21,9 +36,28 @@ void Copter::update_sensor_guided_target(void) {
     //     return;
     // }
 
-    GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "Run %u", (unsigned) snowbat_search_algo_count);
-    return;
-    mcp_disp.update();
+    // GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "Run %u", (unsigned) snowbat_search_algo_count);
+    // return;
+    // mcp_disp.update();
+
+    Vector3f current = pos_control->get_pos_estimate_NED_m();
+
+    float drone_yaw_rad = ahrs_view->yaw;       // current drone heading
+    float direction_rad = 0;         // command says "right"
+    float distance_m = 5.0f;
+    float max_step_m = 0.5f;
+
+    Vector3f target = make_ned_target_body_relative(
+        current,
+        drone_yaw_rad,
+        direction_rad,
+        distance_m,
+        max_step_m
+    );
+
+    GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "Drone yaw %f, North %f, East %f, Down %f", drone_yaw_rad * 180/3.14, target.x, target.y, target.z);
+
+
 
     // const uint8_t left = mcp_disp.left_digit();
     // const uint8_t right = mcp_disp.right_digit();
@@ -35,6 +69,7 @@ void Copter::update_sensor_guided_target(void) {
     // }
 
     // // add our averaging filter here...
+
 
     // const float distance_m = (float) left + (float) right / 10;
 
