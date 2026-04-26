@@ -13,6 +13,10 @@ volatile bool readFlag = false;
 volatile uint32_t ledStates = 0;
 
 
+
+
+
+
 uint8_t reformLED(uint32_t raw, int* order, int size) {
   uint8_t result = 0;
   for (int i = 0; i < size; i++) {
@@ -23,6 +27,22 @@ uint8_t reformLED(uint32_t raw, int* order, int size) {
   return result;
 }
 
+
+float direction_angle(uint8_t direction_bits) {
+  float pi = 3.1415926536;
+
+  if (direction_bits == 0b00010000) return -pi / 2;
+  if (direction_bits == 0b00011000) return -67.5 * (pi / 180);
+  if (direction_bits == 0b00001000) return -pi / 4;
+  if (direction_bits == 0b00001100) return -22.5 * (pi / 180);
+  if (direction_bits == 0b00000100) return 0;  // up, 0 deg
+  if (direction_bits == 0b00000110) return 22.5 * (pi / 180);
+  if (direction_bits == 0b00000010) return pi / 4;
+  if (direction_bits == 0b00000011) return 67.5 * (pi / 180);
+  return pi / 2;
+}
+
+
 // Must read out GPIO pins in order of a = LSB, g = MSB
 uint8_t getDigitFromMask(uint8_t mask, uint8_t left) {
     // Standard Common Cathode Lookup Table
@@ -30,13 +50,13 @@ uint8_t getDigitFromMask(uint8_t mask, uint8_t left) {
         0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x67
     };
 
-    static const uint8_t segmentTableLeft[] = {
-        0x3F, 0x16, 0x5B, 0x5F, 0x76, 0x6D, 0x7D, 0x07, 0x7F, 0x67
-    };
+    // static const uint8_t segmentTableLeft[] = {
+    //     0x3F, 0x16, 0x5B, 0x5F, 0x76, 0x6D, 0x7D, 0x07, 0x7F, 0x67
+    // };
 
     if (left) {
       for (uint8_t i = 0; i < 10; ++i) {
-        if (segmentTableLeft[i] == mask) {
+        if (segmentTableRight[i] == mask) {
             return i;
         }
       }
@@ -94,7 +114,7 @@ void loop() {
         ledStates |= (1UL << i); // store pin state as a bit
       }
     }
-
+    Serial.println(ledStates, BIN);
 
     // Decode the pattern
     int leftDigitSegs[] = {1, 0, 28, 30, 29, 2, 13};
@@ -102,12 +122,15 @@ void loop() {
     int directionSegs[] = {15, 14, 12, 10, 9};
     uint8_t reformed_left_digit = reformLED(ledStates, leftDigitSegs, 7);
     uint8_t reformed_right_digit = reformLED(ledStates, rightDigitSegs, 7);
-    uint8_t direction = reformLED(ledStates, directionSegs, 5);
+    uint8_t mid = reformLED(ledStates, directionSegs, 5);
+    float direction = direction_angle(mid);
     uint8_t left_digit = getDigitFromMask(reformed_left_digit, 1);
     uint8_t right_digit = getDigitFromMask(reformed_right_digit, 0);
     Serial.print(left_digit);
     Serial.print(" | ");
     Serial.print(right_digit);
+    Serial.print(" | ");
+    Serial.print(mid);
     Serial.print(" | ");
     Serial.println(direction);
     delay(500);
