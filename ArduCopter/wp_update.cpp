@@ -30,6 +30,15 @@ Vector3f make_ned_target_body_relative(const Vector3f& current_ned,
     return target;
 }
 
+float compare_neds(Vector3f current_ned, Vector3f target_ned, bool use_down) {
+    float dN = target_ned.x - current_ned.x;
+    float dE = target_ned.y - current_ned.y;
+    float dD = target_ned.z - current_ned.z;
+
+    if (use_down) return dN*dN + dE*dE + dD*dD;
+    return dN*dN + dE*dE;
+}
+
 void Copter::update_sensor_guided_target(void) {
     snowbat_search_algo_count++;
     // if (!mcp_disp.healthy()) {
@@ -39,24 +48,43 @@ void Copter::update_sensor_guided_target(void) {
     // GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "Run %u", (unsigned) snowbat_search_algo_count);
     // return;
     // mcp_disp.update();
+    Vector3f current_ned = pos_control->get_pos_estimate_NED_m();
+    float ned_compare_tol = .05;
+    if (!is_target_set) {
 
-    Vector3f current = pos_control->get_pos_estimate_NED_m();
+        const float pi = 3.1415926536;
 
-    float drone_yaw_rad = ahrs_view->yaw;       // current drone heading
-    float direction_rad = 0;         // command says "right"
-    float distance_m = 5.0f;
-    float max_step_m = 0.5f;
+        float drone_yaw_rad = ahrs_view->yaw;  // current drone heading
+        float direction_rad = rand_float() * pi - pi/2;
+        float distance_m = 1;
+        float max_step_m = 1;
 
-    Vector3f target = make_ned_target_body_relative(
-        current,
-        drone_yaw_rad,
-        direction_rad,
-        distance_m,
-        max_step_m
-    );
+        target_ned = make_ned_target_body_relative(
+            current_ned,
+            drone_yaw_rad,
+            direction_rad,
+            distance_m,
+            max_step_m
+        );
+        
+        is_target_set = true;
 
-    GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "Drone yaw %f, North %f, East %f, Down %f", drone_yaw_rad * 180/3.14, target.x, target.y, target.z);
+        GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "Moving from NEDi = (%f, %f) to NEDt = (%f, %f)", current_ned.x, current_ned.y, target_ned.x, target_ned.y);
+    } else {
+        if (snowbat_search_algo_count % 20 == 0) {
+            float ned_error = compare_neds(current_ned, target_ned, false);
+            if (ned_error <= ned_compare_tol * ned_compare_tol) {
+                is_target_set = false;
+                GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "Reached target, setting new one");
+            } else {
+                GCS_SEND_TEXT(MAV_SEVERITY_EMERGENCY, "NED current: (%f, %f) NED target: (%f, %f). Error is %f", current_ned.x, current_ned.y, target_ned.x, target_ned.y, ned_error);
+            }
+        }
+    }
 
+    
+
+    
 
 
     // const uint8_t left = mcp_disp.left_digit();

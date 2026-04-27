@@ -980,6 +980,8 @@ private:
     
     AP_MCPDisplay mcp_disp;  // stick MCP obj initialization here
     uint32_t snowbat_search_algo_count = 0;
+    Vector3f target_ned;
+    bool is_target_set = false;
     // make update_sensor_guided_target that actually takes in beacon and tof, sets mode to Guided and calls mode.set_pos_NED_m bec this is body frame
     // wp_update.cpp
     void update_sensor_guided_target(void);
